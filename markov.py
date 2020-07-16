@@ -9,14 +9,14 @@ from pprint import pprint
 
 
 def open_and_read_file():
-    """Take any number of text files and turns
+    """Takes any number of text files and turns
     the files' contents into one string of text.
     """
 
     contents = ''
 
-    for i in range(1, len(sys.argv)):
-        contents += open(str(sys.argv[i])).read()
+    for text in range(2, len(sys.argv)):
+        contents += open(str(sys.argv[text])).read()
 
     return contents.strip()
 
@@ -51,29 +51,17 @@ def make_chains():
     # Open the file and turn it into one long string
     contents = open_and_read_file()
 
-    # List of individual words
+    # Creates a list of individual words
     words_list = re.split('\s+', contents)
 
-    # new_list is a list of tuples (that correspond to keys)
-    new_list = []
-    n = 3
-    for i, word in enumerate(words_list[:-1]):
-        new_list.append((words_list[i], words_list[i + 1]))
+    # n is for the n-gram and is passed in as the second argument
+    n = int(sys.argv[1])
 
-    # for id, word in enumerate(words_list[:-n]):
-    #     ngram = tuple()
-    #     word = words_list[id]
-    #     # for i in range(n):
-    #     tup = tuple(word)
-    #     ngram = (ngram + tup)
-    #     print(tup)
-    #     print(ngram)
-    #     new_list.append(ngram)
+    for idx, word in enumerate(words_list[:-n]):
+        ngram = tuple(words_list[idx: (idx + n)])
+        next_word = words_list[idx + n]
 
-    for idx, ngram in enumerate(new_list[:-1]):
-        next_word = new_list[idx + 1][1]
         values = chains.setdefault(ngram, [])
-
         values.append(next_word)
 
     return chains
@@ -100,21 +88,21 @@ def make_text():
             break
 
     words = [random_word]
-    phrase = (phrase[1], random_word)
+    phrase = (*phrase[1:], random_word)
 
   # Continue adding words using random selection
     while True:
         try:
-            max = len(chains[phrase]) - 1
-            random_word = chains[phrase][random.randint(0, max)]
+            random_word = random.choice(chains[phrase])
             words.append(random_word)
-            phrase = (phrase[1], random_word)
+            phrase = (*phrase[1:], random_word)
 
-            if words[-1][-1] == '.' and len(words) > 50:
+            # Breaks if the message is > 100 words and it ends with a period
+            if words[-1][-1] == '.' and len(words) > 100:
                 break
 
         except:
-            # Breaks if it gets to the end (random selection results in error)
+            # Breaks if chain gets to the end (random selection results in error)
             break
 
     return " ".join(words)
